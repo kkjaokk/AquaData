@@ -7,8 +7,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import Base
-
+from app.models.base import Base, enum_values
 
 class SessionType(str, enum.Enum):
     TRAINING = "training"
@@ -38,9 +37,12 @@ class TrainingSession(Base):
     )
     session_date: Mapped[date] = mapped_column(Date, index=True)
     session_type: Mapped[SessionType] = mapped_column(
-        Enum(SessionType, native_enum=False, length=20)
+    Enum(SessionType, native_enum=False, length=20, values_callable=enum_values)
     )
-    stroke: Mapped[Stroke] = mapped_column(Enum(Stroke, native_enum=False, length=20))
+    stroke: Mapped[Stroke] = mapped_column(
+        Enum(Stroke, native_enum=False, length=20, values_callable=enum_values)
+    )
+    
     pool_length_m: Mapped[int] = mapped_column(Integer)
     distance_m: Mapped[int] = mapped_column(Integer)
     total_time_s: Mapped[Decimal] = mapped_column(Numeric(8, 2))

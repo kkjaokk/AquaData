@@ -1,1 +1,64 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --subtle: #f5f6fa;
+  --line: #e4e6ee;
+  --fg: #0e1023;
+  --muted: #5a5e75;
+  --brand: #000080;
+  --brand-hover: #0a0a9e;
+  --brand-fg: #ffffff;
+  --brand-soft: #ececfa;
+  --brand-text: #000080;
+  --danger: #b42318;
+  --danger-soft: #fdecea;
+  --success: #067647;
+  --success-soft: #e6f6ec;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0b0c14;
+  --surface: #12131d;
+  --subtle: #181a27;
+  --line: #262839;
+  --fg: #eceef7;
+  --muted: #9a9db4;
+  --brand: #4747e0;
+  --brand-hover: #5a5aea;
+  --brand-fg: #ffffff;
+  --brand-soft: #1b1b45;
+  --brand-text: #a5a5ff;
+  --danger: #ff7a7a;
+  --danger-soft: #3a1618;
+  --success: #5fd68a;
+  --success-soft: #12301f;
+}
+
+@theme inline {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-subtle: var(--subtle);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-fg: var(--brand-fg);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-text: var(--brand-text);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+}
+
+body {
+  @apply bg-bg font-sans text-fg antialiased;
+}

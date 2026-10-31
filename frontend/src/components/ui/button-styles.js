@@ -1,5 +1,5 @@
 const base =
-  'inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium transition-colors ' +
+  'inline-flex items-center justify-center gap-2 rounded-xl text-sm font-medium transition-colors ' +
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-text ' +
   'disabled:pointer-events-none disabled:opacity-50'
 
@@ -10,7 +10,7 @@ const variants = {
   danger: 'border border-line text-danger hover:bg-danger-soft',
 }
 
-const sizes = { md: 'h-10 px-4', sm: 'h-8 px-3' }
+const sizes = { md: 'h-11 px-5', sm: 'h-8 px-3' }
 
 export function buttonClasses(variant = 'primary', size = 'md', extra = '') {
   return [base, variants[variant], sizes[size], extra].filter(Boolean).join(' ')

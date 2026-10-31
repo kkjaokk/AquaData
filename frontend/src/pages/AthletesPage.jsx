@@ -1,18 +1,17 @@
-import { Pencil, Plus, UserCheck, UserX } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Plus } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import AthleteCard from '../components/AthleteCard'
 import PageHeader from '../components/PageHeader'
 import Alert from '../components/ui/Alert'
-import Badge from '../components/ui/Badge'
-import Button from '../components/ui/Button'
+import ChipGroup from '../components/ui/ChipGroup'
 import { buttonClasses } from '../components/ui/button-styles'
-import Segmented from '../components/ui/Segmented'
+import SearchField from '../components/ui/SearchField'
+import Select from '../components/ui/Select'
 import Spinner from '../components/ui/Spinner'
-import TextField from '../components/ui/TextField'
 import { listAthletes, updateAthlete } from '../services/athletes'
-import { calcAge, formatDate } from '../utils/date'
 
-const PAGE_SIZE = 20
+const LIMIT = 100
 
 const STATUS_OPTIONS = [
   { value: 'active', label: 'Ativos' },
@@ -20,30 +19,39 @@ const STATUS_OPTIONS = [
   { value: 'all', label: 'Todos' },
 ]
 
-const SEX_LABEL = { M: 'Masculino', F: 'Feminino' }
+const SORT_OPTIONS = [
+  { value: 'name', label: 'Ordenar: Nome' },
+  { value: 'age', label: 'Ordenar: Idade' },
+  { value: 'recent', label: 'Ordenar: Mais recentes' },
+]
+
+const SORTERS = {
+  name: (a, b) => a.name.localeCompare(b.name, 'pt-BR'),
+  age: (a, b) => b.birth_date.localeCompare(a.birth_date),
+  recent: (a, b) => b.created_at.localeCompare(a.created_at),
+}
+
 const queryKey = (status, search) => `${status}|${search}`
 const activeParam = (status) => (status === 'all' ? undefined : status === 'active')
 
-function initials(name) {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0].toUpperCase())
-    .join('')
+function describe(count, status, hasMore) {
+  const n = hasMore ? `${count}+` : count
+  const one = count === 1
+  if (status === 'active') return `${n} ${one ? 'atleta' : 'atletas'} sob sua orientação`
+  if (status === 'inactive') return `${n} ${one ? 'atleta inativo' : 'atletas inativos'}`
+  return `${n} ${one ? 'atleta cadastrado' : 'atletas cadastrados'}`
 }
 
 export default function AthletesPage() {
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('active')
+  const [sort, setSort] = useState('name')
   const [result, setResult] = useState({ key: null, items: [], hasMore: false, error: '' })
   const [actionError, setActionError] = useState('')
   const [busyId, setBusyId] = useState(null)
-  const [loadingMore, setLoadingMore] = useState(false)
 
-  const currentKey = queryKey(status, search)
-  const loading = result.key !== currentKey
+  const loading = result.key !== queryKey(status, search)
 
   useEffect(() => {
     const id = setTimeout(() => setSearch(searchInput), 300)
@@ -53,10 +61,9 @@ export default function AthletesPage() {
   useEffect(() => {
     let cancelled = false
     const key = queryKey(status, search)
-    listAthletes({ active: activeParam(status), search, limit: PAGE_SIZE })
+    listAthletes({ active: activeParam(status), search, limit: LIMIT })
       .then((data) => {
-        if (!cancelled)
-          setResult({ key, items: data, hasMore: data.length === PAGE_SIZE, error: '' })
+        if (!cancelled) setResult({ key, items: data, hasMore: data.length === LIMIT, error: '' })
       })
       .catch((err) => {
         if (!cancelled) setResult({ key, items: [], hasMore: false, error: err.message })
@@ -66,27 +73,7 @@ export default function AthletesPage() {
     }
   }, [status, search])
 
-  async function loadMore() {
-    setLoadingMore(true)
-    setActionError('')
-    try {
-      const data = await listAthletes({
-        active: activeParam(status),
-        search,
-        limit: PAGE_SIZE,
-        offset: result.items.length,
-      })
-      setResult((r) => ({
-        ...r,
-        items: [...r.items, ...data],
-        hasMore: data.length === PAGE_SIZE,
-      }))
-    } catch (err) {
-      setActionError(err.message)
-    } finally {
-      setLoadingMore(false)
-    }
-  }
+  const sorted = useMemo(() => [...result.items].sort(SORTERS[sort]), [result.items, sort])
 
   async function toggleActive(athlete) {
     setBusyId(athlete.id)
@@ -111,29 +98,39 @@ export default function AthletesPage() {
 
   return (
     <>
-      <PageHeader title="Atletas" description="Gerencie os atletas que você acompanha.">
+      <PageHeader
+        title="Meus atletas"
+        description={loading ? 'Carregando atletas…' : describe(sorted.length, status, result.hasMore)}
+      >
         <Link to="/atletas/novo" className={buttonClasses('primary')}>
           <Plus size={16} aria-hidden="true" />
           Novo atleta
         </Link>
       </PageHeader>
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <TextField
+      <div className="mb-8 flex flex-wrap items-center gap-3">
+        <SearchField
           id="search"
-          type="search"
-          aria-label="Buscar atleta por nome"
-          placeholder="Buscar por nome"
+          label="Buscar atleta por nome"
+          placeholder="Buscar atleta por nome"
           value={searchInput}
           maxLength={120}
           onChange={(e) => setSearchInput(e.target.value)}
-          className="sm:w-72"
+          className="w-full md:w-96"
         />
-        <Segmented
+        <ChipGroup
           options={STATUS_OPTIONS}
           value={status}
           onChange={setStatus}
           ariaLabel="Filtrar por situação"
+        />
+        <Select
+          id="sort"
+          label="Ordenar atletas"
+          options={SORT_OPTIONS}
+          value={sort}
+          onChange={setSort}
+          className="w-full sm:ml-auto sm:w-56"
         />
       </div>
 
@@ -147,8 +144,8 @@ export default function AthletesPage() {
         <Spinner />
       ) : result.error ? (
         <Alert>{result.error}</Alert>
-      ) : result.items.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line py-16 text-center">
+      ) : sorted.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-line bg-surface py-16 text-center">
           <p className="font-medium">
             {filtering ? 'Nenhum atleta encontrado' : 'Você ainda não cadastrou atletas'}
           </p>
@@ -164,82 +161,15 @@ export default function AthletesPage() {
           )}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-line bg-surface">
-          <table className="w-full min-w-[40rem] text-left text-sm">
-            <thead className="bg-subtle text-xs uppercase tracking-wide text-muted">
-              <tr>
-                <th scope="col" className="px-5 py-3 font-medium">Atleta</th>
-                <th scope="col" className="px-5 py-3 font-medium">Idade</th>
-                <th scope="col" className="px-5 py-3 font-medium">Sexo</th>
-                <th scope="col" className="px-5 py-3 font-medium">Situação</th>
-                <th scope="col" className="px-5 py-3 text-right font-medium">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {result.items.map((athlete) => (
-                <tr key={athlete.id} className="border-t border-line">
-                  <td className="px-5 py-3">
-                    <div className="flex items-center gap-3">
-                      <span
-                        aria-hidden="true"
-                        className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-soft text-xs font-semibold text-brand-text"
-                      >
-                        {initials(athlete.name)}
-                      </span>
-                      <div>
-                        <p className="font-medium">{athlete.name}</p>
-                        <p className="text-xs text-muted">
-                          Nascimento: {formatDate(athlete.birth_date)}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3">{calcAge(athlete.birth_date)} anos</td>
-                  <td className="px-5 py-3">{SEX_LABEL[athlete.sex]}</td>
-                  <td className="px-5 py-3">
-                    <Badge tone={athlete.active ? 'success' : 'neutral'}>
-                      {athlete.active ? 'Ativo' : 'Inativo'}
-                    </Badge>
-                  </td>
-                  <td className="px-5 py-3">
-                    <div className="flex justify-end gap-2">
-                      <Link
-                        to={`/atletas/${athlete.id}/editar`}
-                        className={buttonClasses('secondary', 'sm')}
-                      >
-                        <Pencil size={14} aria-hidden="true" />
-                        Editar
-                      </Link>
-                      <Button
-                        size="sm"
-                        variant={athlete.active ? 'danger' : 'secondary'}
-                        disabled={busyId === athlete.id}
-                        onClick={() => toggleActive(athlete)}
-                      >
-                        {athlete.active ? (
-                          <UserX size={14} aria-hidden="true" />
-                        ) : (
-                          <UserCheck size={14} aria-hidden="true" />
-                        )}
-                        {athlete.active ? 'Inativar' : 'Reativar'}
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {!loading && !result.error && result.items.length > 0 && (
-        <div className="mt-4 flex items-center justify-between text-sm text-muted">
-          <span>Mostrando {result.items.length} atleta(s)</span>
-          {result.hasMore && (
-            <Button variant="secondary" onClick={loadMore} disabled={loadingMore}>
-              {loadingMore ? 'Carregando…' : 'Carregar mais'}
-            </Button>
-          )}
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {sorted.map((athlete) => (
+            <AthleteCard
+              key={athlete.id}
+              athlete={athlete}
+              busy={busyId === athlete.id}
+              onToggleActive={toggleActive}
+            />
+          ))}
         </div>
       )}
     </>

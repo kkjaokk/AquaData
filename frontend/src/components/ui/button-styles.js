@@ -10,7 +10,7 @@ const variants = {
   danger: 'border border-line text-danger hover:bg-danger-soft',
 }
 
-const sizes = { md: 'h-11 px-5', sm: 'h-8 px-3' }
+const sizes = { md: 'h-11 px-5', sm: 'h-8 px-3', icon: 'size-9' }
 
 export function buttonClasses(variant = 'primary', size = 'md', extra = '') {
   return [base, variants[variant], sizes[size], extra].filter(Boolean).join(' ')

@@ -20,6 +20,9 @@
   --danger-soft: #fdecea;
   --success: #067647;
   --success-soft: #e6f6ec;
+  --canvas: #f3f8fc;
+  --warning: #b54708;
+  --warning-soft: #fef0c7;
 }
 
 [data-theme='dark'] {
@@ -40,6 +43,9 @@
   --danger-soft: #3a1618;
   --success: #5fd68a;
   --success-soft: #12301f;
+  --canvas: #08141f;
+  --warning: #fdb022;
+  --warning-soft: #3b2a05;
 }
 
 @theme inline {
@@ -61,6 +67,9 @@
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
   --animate-fill: fill 6s linear forwards;
+  --color-canvas: var(--canvas);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
 }
 
 @keyframes fill {

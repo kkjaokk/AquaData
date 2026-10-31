@@ -2,12 +2,12 @@ from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 
-from app.api.deps import CurrentCoach, DbSession, OwnedAthlete
+from app.api.deps import DbSession, OwnedAthlete
 from app.models import Athlete, TrainingSession
 from app.models.training_session import SessionType, Stroke
-from app.schemas.session import SessionCreate, SessionListItem, SessionRead
+from app.schemas.session import SessionCreate, SessionListItem, SessionPage, SessionRead
 router = APIRouter(
     prefix="/athletes/{athlete_id}/sessions", tags=["Sessões de treino"]
 )
@@ -97,19 +97,20 @@ def delete_session(session_id: int, athlete: OwnedAthlete, db: DbSession):
     db.delete(record)
     db.commit()
 
-    coach_router = APIRouter(prefix="/sessions", tags=["Sessões de treino"])
+coach_router = APIRouter(prefix="/sessions", tags=["Sessões de treino"])
 
 
-@coach_router.get("", response_model=list[SessionListItem])
+@coach_router.get("", response_model=SessionPage)
 def list_all_sessions(
     coach: CurrentCoach,
     db: DbSession,
     athlete_id: int | None = None,
+    search: Annotated[str | None, Query(max_length=120)] = None,
     session_type: SessionType | None = None,
     stroke: Stroke | None = None,
     date_from: date | None = None,
     date_to: date | None = None,
-    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    limit: Annotated[int, Query(ge=1, le=200)] = 10,
     offset: Annotated[int, Query(ge=0)] = 0,
 ):
     if date_from and date_to and date_from > date_to:
@@ -117,27 +118,54 @@ def list_all_sessions(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="A data inicial não pode ser posterior à final",
         )
-    stmt = (
-        select(TrainingSession, Athlete.name)
-        .join(Athlete, TrainingSession.athlete_id == Athlete.id)
-        .where(Athlete.coach_id == coach.id)
-    )
+
+    conditions = [Athlete.coach_id == coach.id]
     if athlete_id is not None:
-        stmt = stmt.where(TrainingSession.athlete_id == athlete_id)
+        conditions.append(TrainingSession.athlete_id == athlete_id)
+    if search and search.strip():
+        term = (
+            search.strip()
+            .replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_")
+        )
+        conditions.append(Athlete.name.ilike(f"%{term}%", escape="\\"))
     if session_type:
-        stmt = stmt.where(TrainingSession.session_type == session_type)
+        conditions.append(TrainingSession.session_type == session_type)
     if stroke:
-        stmt = stmt.where(TrainingSession.stroke == stroke)
+        conditions.append(TrainingSession.stroke == stroke)
     if date_from:
-        stmt = stmt.where(TrainingSession.session_date >= date_from)
+        conditions.append(TrainingSession.session_date >= date_from)
     if date_to:
-        stmt = stmt.where(TrainingSession.session_date <= date_to)
-    stmt = (
-        stmt.order_by(TrainingSession.session_date.desc(), TrainingSession.id.desc())
+        conditions.append(TrainingSession.session_date <= date_to)
+
+    join_on = TrainingSession.athlete_id == Athlete.id
+    total = (
+        db.scalar(
+            select(func.count())
+            .select_from(TrainingSession)
+            .join(Athlete, join_on)
+            .where(*conditions)
+        )
+        or 0
+    )
+    rows = db.execute(
+        select(TrainingSession, Athlete.name)
+        .join(Athlete, join_on)
+        .where(*conditions)
+        .order_by(TrainingSession.session_date.desc(), TrainingSession.id.desc())
         .limit(limit)
         .offset(offset)
+    ).all()
+
+    return SessionPage(
+        items=[
+            SessionListItem.model_validate(record).model_copy(
+                update={"athlete_name": name}
+            )
+            for record, name in rows
+        ],
+        total=total,
+        limit=limit,
+        offset=offset,
     )
-    return [
-        SessionListItem.model_validate(record).model_copy(update={"athlete_name": name})
-        for record, name in db.execute(stmt).all()
-    ]

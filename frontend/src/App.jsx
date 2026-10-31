@@ -6,6 +6,8 @@ import AthleteEditPage from './pages/AthleteEditPage'
 import AthletesPage from './pages/AthletesPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import SessionsPage from './pages/SessionsPage'
+
 
 
 export default function App() {
@@ -18,6 +20,7 @@ export default function App() {
           <Route path="/atletas/novo" element={<AthleteCreatePage />} />
           <Route path="/atletas/:id/editar" element={<AthleteEditPage />} />
           <Route path="/cadastro" element={<RegisterPage />} />
+          <Route path="/treinos" element={<SessionsPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/atletas" replace />} />

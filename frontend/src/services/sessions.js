@@ -19,3 +19,20 @@ export function listSessions({
   if (dateTo) params.set('date_to', dateTo)
   return request(`/sessions?${params}`)
 }
+
+export function listAthleteSessions(athleteId, { stroke, limit = 200 } = {}) {
+  const params = new URLSearchParams({ limit })
+  if (stroke) params.set('stroke', stroke)
+  return request(`/athletes/${athleteId}/sessions?${params}`)
+}
+
+export const getSession = (athleteId, id) => request(`/athletes/${athleteId}/sessions/${id}`)
+
+export const createSession = (athleteId, data) =>
+  request(`/athletes/${athleteId}/sessions`, { method: 'POST', body: data })
+
+export const updateSession = (athleteId, id, data) =>
+  request(`/athletes/${athleteId}/sessions/${id}`, { method: 'PUT', body: data })
+
+export const deleteSession = (athleteId, id) =>
+  request(`/athletes/${athleteId}/sessions/${id}`, { method: 'DELETE' })

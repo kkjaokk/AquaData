@@ -2,7 +2,7 @@ import { ArrowRight, Filter, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
-import SessionFilters from '../components/SessionFilters'
+import SessionFilters from '../components/SessionsFilters'
 import Alert from '../components/ui/Alert'
 import Button from '../components/ui/Button'
 import { buttonClasses } from '../components/ui/button-styles'
@@ -171,7 +171,7 @@ export default function SessionsPage() {
                       <td className="px-5 py-4 text-muted">{formatDate(session.session_date)}</td>
                       <td className="px-5 py-4">{formatRace(session)}</td>
                       <td className="px-5 py-4 font-semibold">{formatTime(session.total_time_s)}</td>
-                      <td className="px-5 py-4">{m.swolf ?? <Dash />}</td>
+                      <td className="px-5 py-4">{m.swolf != null ? formatDecimal(m.swolf, 1) : <Dash />}</td>
                       <td className="px-5 py-4">
                         {m.cb != null ? `${formatDecimal(m.cb)} m` : <Dash />}
                       </td>

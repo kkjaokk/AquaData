@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy import func, select
 
-from app.api.deps import DbSession, OwnedAthlete
+from app.api.deps import CurrentCoach, DbSession, OwnedAthlete
 from app.models import Athlete, TrainingSession
 from app.models.training_session import SessionType, Stroke
 from app.schemas.session import SessionCreate, SessionListItem, SessionPage, SessionRead

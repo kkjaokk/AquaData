@@ -7,7 +7,6 @@ from app.api import auth, health
 from app.api import athletes, auth, health
 
 from app.api import athletes, auth, health, sessions
-
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
@@ -22,8 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(health.router)
-app.include_router(auth.router)
+
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(athletes.router)

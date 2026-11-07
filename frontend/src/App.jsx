@@ -10,7 +10,7 @@ import RegisterPage from './pages/RegisterPage'
 import SessionCreatePage from './pages/SessionCreatePage'
 import SessionDetailPage from './pages/SessionDetailPage'
 import SessionEditPage from './pages/SessionEditPage'
-import SessionsPage from './pages/SessionsPage'
+import SessionsPage from './pages/SessionsPages'
 
 export default function App() {
   return (

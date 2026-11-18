@@ -103,10 +103,13 @@ def main() -> None:
     )
 
     if args.csv:
-        with open(args.csv, "w", newline="", encoding="utf-8") as file:
-            writer = csv.DictWriter(file, fieldnames=[key for key, _ in COLUMNS], delimiter=";")
-            writer.writeheader()
-            writer.writerows(rows)
+        # padrão brasileiro: ";" separa colunas e "," separa decimais (Excel e Planilhas
+        # Google em português leem certo); utf-8-sig faz o Excel reconhecer os acentos
+        with open(args.csv, "w", newline="", encoding="utf-8-sig") as file:
+            writer = csv.writer(file, delimiter=";")
+            writer.writerow([title for _, title in COLUMNS])
+            for row in rows:
+                writer.writerow(["" if row[key] is None else _fmt(row[key]) for key, _ in COLUMNS])
         print(f"\nTabela salva em {args.csv}")
 
 

@@ -1,5 +1,3 @@
-
-
 export const LOGIN_HIGHLIGHTS = [
   {
     id: 'historico',
@@ -20,7 +18,7 @@ export const LOGIN_HIGHLIGHTS = [
     label: 'Previsão',
     title: 'Previsão de desempenho',
     description:
-      'A regressão linear estima os próximos tempos e mostra se o treino está surtindo efeito.',
+      'O sistema estima os próximos tempos a partir do histórico e mostra se o treino está surtindo efeito.',
   },
   {
     id: 'relatorios',

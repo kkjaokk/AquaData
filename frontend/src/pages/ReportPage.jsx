@@ -59,10 +59,10 @@ const STATUS = {
 }
 
 const MODEL_LINES = {
-  training: { dataKey: 'model', name: 'Modelo (treino)', color: 'var(--accent)', dashed: true },
+  training: { dataKey: 'model', name: 'Previsão para treino', color: 'var(--accent)', dashed: true },
   competition: {
     dataKey: 'modelComp',
-    name: 'Modelo (competição)',
+    name: 'Previsão para competição',
     color: 'var(--warning)',
     dashed: true,
   },
@@ -120,8 +120,8 @@ function PrintHeader({ report, coachName, periodLabel, generatedAt }) {
         <span className="font-semibold">{report.athlete_name}</span> · {periodLabel}
       </p>
       <p className="mt-3 rounded-lg border border-line px-3 py-2 text-xs text-muted">
-        As previsões são estimativas estatísticas (Regressão Linear sobre o histórico de cada
-        prova) e servem de apoio à decisão do treinador; não substituem a avaliação profissional.
+        As previsões são estimativas calculadas a partir dos tempos já registrados em cada prova
+        e servem de apoio à decisão do treinador; não substituem a avaliação profissional.
       </p>
     </div>
   )
@@ -212,8 +212,8 @@ function PredictionCard({ event, minRecords, minTrendRecords }) {
             {signed(p.coef_order)} s por registro
           </span>
         </Row>
-        <Row label="Erro médio do modelo (MAE)">
-          {p.mae_s != null ? `${formatDecimal(p.mae_s, 2)} s` : <Dash />}
+        <Row label="Erro médio das previsões">
+          {p.mae_s != null ? `cerca de ${formatDecimal(p.mae_s, 2)} s` : <Dash />}
         </Row>
       </dl>
     </Card>
@@ -375,8 +375,8 @@ function EventSection({ athleteId, event, report }) {
         />
         <p className="mt-3 text-xs text-muted">
           {hasModel
-            ? 'Pontos: registros do período. Linhas tracejadas: reta da Regressão Linear ajustada com todo o histórico da prova, prolongada para os próximos registros (sem data). Quanto mais distante, maior a incerteza.'
-            : `Pontos: registros do período. A reta do modelo aparece a partir de ${report.min_records} registros desta prova.`}
+            ? 'Pontos: registros do período. Linhas tracejadas: tendência calculada com todo o histórico da prova, prolongada para os próximos registros (sem data). Quanto mais longe, menos certa a previsão.'
+            : `Pontos: registros do período. A linha de tendência aparece a partir de ${report.min_records} registros desta prova.`}
         </p>
       </div>
 
@@ -625,7 +625,7 @@ export default function ReportPage() {
               <p className="flex items-start gap-2 text-xs text-muted">
                 <Info size={14} aria-hidden="true" className="mt-0.5 shrink-0" />
                 O período filtra os registros, os tempos, as métricas e os pontos do gráfico. A
-                previsão, o selo de tendência e a reta do modelo usam sempre todo o histórico de
+                previsão, o selo e a linha de tendência usam sempre todo o histórico de
                 cada prova, como no Início e no Desempenho. O selo aparece a partir de{' '}
                 {data.min_trend_records} registros na prova; a indicação de melhora ou piora das
                 métricas, a partir de {data.min_conclusive_points} treinos no período.

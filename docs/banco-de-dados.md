@@ -1,6 +1,6 @@
 # Banco de dados
 
-PostgreSQL (18 no ambiente local; a versão mais recente oferecida pelo Neon em produção), acessado pelo SQLAlchemy 2 (`backend/app/models/`), com a estrutura versionada por migrations do Alembic (`backend/alembic/versions/`).
+PostgreSQL 18 (a mesma versão no ambiente local, no GitHub Actions e em produção no Neon), acessado pelo SQLAlchemy 2 (`backend/app/models/`), com a estrutura versionada por migrations do Alembic (`backend/alembic/versions/`).
 
 ## Modelo
 

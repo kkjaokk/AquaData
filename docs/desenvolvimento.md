@@ -66,7 +66,7 @@ E testar a funcionalidade no navegador (`http://localhost:5173`). Para mudanças
 |---|---|---|
 | Vercel (frontend) | Repositório principal, pasta `frontend` | Variável `VITE_API_URL` (endereço da API, sem barra no final). Mudou a variável, refazer o deploy |
 | Render (API) | **Fork** `EnrLobo/AquaData`, branch `main`, pasta `backend` | Web service Python, instância Free. Build: `pip install -r requirements.txt`. Início: `alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Health check: `/health`. Variáveis: `PYTHON_VERSION` (`3.13`), `DATABASE_URL`, `SECRET_KEY`, `CORS_ORIGINS` (lista JSON com o endereço do frontend, sem barra no final) |
-| Neon (banco) | PostgreSQL 19 gerenciado, plano Free, projeto `aquadata`, branch `production` | Região AWS US East 2 (Ohio), perto da região do Render no leste dos EUA. `DATABASE_URL` = connection string **direta** (sem pooler), com `sslmode=require` |
+| Neon (banco) | PostgreSQL 18 gerenciado, plano Free | Região AWS US East 1 (N. Virginia), a mesma região do Render. `DATABASE_URL` = connection string **direta** (sem pooler), com `sslmode=require`. Mesma versão do ambiente local e do GitHub Actions |
 
 O Render lê o fork porque o integrante que o configurou é colaborador, e não dono, do repositório principal. Por isso, **depois de cada merge**, é preciso fazer o Sync fork no GitHub para a API ser atualizada.
 

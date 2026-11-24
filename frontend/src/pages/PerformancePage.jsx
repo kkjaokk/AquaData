@@ -333,7 +333,7 @@ export default function PerformancePage() {
             : 'Evolução das métricas por atleta'
         }
       >
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           {athletes.loaded && athleteInList && (
             <Select
               id="athlete"
@@ -341,7 +341,7 @@ export default function PerformancePage() {
               options={athleteOptions}
               value={athleteId}
               onChange={(id) => navigate(`/desempenho/${id}`)}
-              className="w-64"
+              className="w-full sm:w-64"
             />
           )}
           {data?.athlete_active && (
@@ -378,13 +378,14 @@ export default function PerformancePage() {
         <>
           <section
             aria-label="Filtros"
-            className="mb-8 space-y-4 rounded-2xl border border-line bg-surface p-5"
+            className="mb-8 space-y-4 rounded-2xl border border-line bg-surface p-4 sm:p-5"
           >
             <ChipGroup
               options={strokeOptions}
               value={data.stroke}
               onChange={(stroke) => updateFilters({ stroke, event: '' })}
               ariaLabel="Nado"
+              scroll
             />
             <div className="flex flex-wrap items-center gap-3">
               <Select
@@ -434,7 +435,7 @@ export default function PerformancePage() {
                   partir de {data.min_conclusive_points}. Clique em uma métrica para vê-la no
                   gráfico.
                 </p>
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {METRICS.map((m) => (
                     <MetricTrendCard
                       key={m.key}
@@ -490,10 +491,10 @@ export default function PerformancePage() {
 
               <section
                 aria-labelledby="chart-title"
-                className="mb-8 rounded-2xl border border-line bg-surface p-6"
+                className="mb-8 rounded-2xl border border-line bg-surface p-4 sm:p-6"
               >
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                  <div>
+                  <div className="min-w-0">
                     <h2 id="chart-title" className="text-lg font-semibold">
                       Evolução: {metric.label}
                     </h2>
@@ -514,6 +515,7 @@ export default function PerformancePage() {
                     value={metricKey}
                     onChange={setMetricKey}
                     ariaLabel="Métrica exibida no gráfico"
+                    scroll
                   />
                 </div>
                 <MetricChart
@@ -546,7 +548,7 @@ export default function PerformancePage() {
                 aria-labelledby="recent-title"
                 className="overflow-hidden rounded-2xl border border-line bg-surface"
               >
-                <div className="flex flex-wrap items-center justify-between gap-2 p-6 pb-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 p-4 pb-3 sm:p-6 sm:pb-4">
                   <h2 id="recent-title" className="text-lg font-semibold">
                     Treinos do período
                   </h2>
@@ -556,7 +558,47 @@ export default function PerformancePage() {
                     </p>
                   )}
                 </div>
-                <div className="overflow-x-auto">
+                {/* celular: cartões; a partir do tablet em pé: tabela (AQ-26) */}
+                <ul className="divide-y divide-line border-t border-line md:hidden">
+                  {recent.map((s) => {
+                    const value = s.metrics?.[metricKey]
+                    return (
+                      <li key={s.id}>
+                        <Link
+                          to={`/treinos/${s.athlete_id}/${s.id}`}
+                          className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-subtle"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium">
+                              {formatRace(s)}
+                              <span className="font-normal text-muted">
+                                {' '}
+                                · {s.pool_length_m} m · {SESSION_TYPE_LABEL[s.session_type]}
+                              </span>
+                            </p>
+                            <p className="text-xs text-muted">{formatDate(s.session_date)}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold">{formatTime(s.total_time_s)}</p>
+                            {!isTime && (
+                              <p className="text-xs text-muted">
+                                {metric.short}:{' '}
+                                {value != null
+                                  ? `${formatDecimal(value, metric.digits)}${
+                                      metric.unit ? ` ${metric.unit}` : ''
+                                    }`
+                                  : '—'}
+                              </p>
+                            )}
+                          </div>
+                          <ArrowRight size={16} aria-hidden="true" className="shrink-0 text-muted" />
+                          <span className="sr-only">Ver detalhes do treino de {formatDate(s.session_date)}</span>
+                        </Link>
+                      </li>
+                    )
+                  })}
+                </ul>
+                <div className="hidden overflow-x-auto md:block">
                   <table className="w-full min-w-[48rem] text-left text-sm">
                     <thead className="bg-subtle text-xs uppercase tracking-wide text-muted">
                       <tr>

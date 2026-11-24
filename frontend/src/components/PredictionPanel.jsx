@@ -53,7 +53,7 @@ export default function PredictionPanel({ loading, error, data }) {
   return (
     <section
       aria-labelledby="prediction-title"
-      className="mb-8 rounded-2xl border border-line bg-surface p-6"
+      className="mb-8 rounded-2xl border border-line bg-surface p-4 sm:p-6"
     >
       <div className="mb-4 flex items-start gap-3">
         <span
@@ -95,7 +95,7 @@ function PredictionContent({ data }) {
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <PredictionBox label="Se for treino" value={data.training_s} last={lastTime} />
         <PredictionBox label="Se for competição" value={data.competition_s} last={lastTime} />
       </div>
@@ -105,7 +105,7 @@ function PredictionContent({ data }) {
         </p>
       )}
 
-      <dl className="mt-6 grid gap-4 text-sm sm:grid-cols-3">
+      <dl className="mt-6 grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
         <div>
           <dt className="text-xs text-muted">Último registro</dt>
           <dd className="mt-1 font-medium">
@@ -133,7 +133,21 @@ function PredictionContent({ data }) {
             <strong>{formatDecimal(evaluation.mape_pct, 1)}%</strong> do tempo).
           </p>
         </div>
-        <div className="mt-3 overflow-x-auto">
+        {/* celular: lista; a partir de sm: tabela (AQ-26) */}
+        <ul className="mt-3 divide-y divide-line border-t border-line sm:hidden">
+          {evaluation.points.map((p) => (
+            <li key={p.session_id} className="px-4 py-3 text-sm">
+              <p className="text-xs text-muted">
+                {formatDate(p.session_date)} · {p.is_competition ? 'Competição' : 'Treino'}
+              </p>
+              <p className="mt-1">
+                Real <strong>{formatTime(p.actual_s)}</strong> · previsto{' '}
+                {formatTime(p.predicted_s)} · diferença {signed(p.error_s)} s
+              </p>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-3 hidden overflow-x-auto sm:block">
           <table className="w-full min-w-[32rem] text-left text-sm">
             <caption className="sr-only">Tempos reais e previstos nos registros de teste</caption>
             <thead className="bg-subtle text-xs uppercase tracking-wide text-muted">
@@ -165,7 +179,7 @@ function PredictionContent({ data }) {
           Regressão Linear por mínimos quadrados, ajustada com os {model.n} registros da prova:
           tempo = b0 + b1 · ordem + b2 · competição.
         </p>
-        <dl className="mt-2 grid gap-x-6 gap-y-1 sm:grid-cols-2">
+        <dl className="mt-2 grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2">
           <div className="flex justify-between gap-3">
             <dt>b0 (intercepto)</dt>
             <dd className="font-medium text-fg">{formatDecimal(model.intercept, 3)} s</dd>

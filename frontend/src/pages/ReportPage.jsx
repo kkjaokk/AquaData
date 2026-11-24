@@ -229,9 +229,56 @@ function trendText(summary, minConclusive) {
   return 'estável'
 }
 
+function metricTone(s) {
+  const conclusive = Boolean(s?.trend && s.conclusive)
+  if (!conclusive) return 'text-muted'
+  if (s.improved === true) return 'text-success'
+  if (s.improved === false) return 'text-danger'
+  return 'text-muted'
+}
+
+// celular: um cartão por métrica (some na impressão, que usa a tabela) (AQ-26)
+function MetricsCards({ event, minConclusive }) {
+  return (
+    <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:hidden print:hidden">
+      {METRICS.map((m) => {
+        const s = event.metrics[m.key]
+        const unit = m.unit ? ` ${m.unit}` : ''
+        return (
+          <li key={m.key} className="rounded-xl border border-line p-3 text-sm">
+            <p className="font-medium">{m.label}</p>
+            <dl className="mt-2 grid grid-cols-3 gap-2">
+              <div>
+                <dt className="text-xs text-muted">Último</dt>
+                <dd>{s ? `${formatDecimal(s.last, m.digits)}${unit}` : <Dash />}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted">Melhor</dt>
+                <dd>{s?.best != null ? `${formatDecimal(s.best, m.digits)}${unit}` : <Dash />}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted">Média</dt>
+                <dd>{s ? `${formatDecimal(s.mean, m.digits)}${unit}` : <Dash />}</dd>
+              </div>
+            </dl>
+            <p className={`mt-2 text-xs ${metricTone(s)}`}>
+              {s?.trend
+                ? `${signed(s.trend.slope, m.digits + 1)}${unit} por treino · ${trendText(
+                    s,
+                    minConclusive,
+                  )}`
+                : 'Tendência: menos de 3 treinos'}
+            </p>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
 function MetricsTable({ event, minConclusive }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="hidden overflow-x-auto md:block print:block">
       <table className="w-full min-w-[40rem] text-left text-sm">
         <caption className="sr-only">Métricas de {eventTitle(event)} no período</caption>
         <thead className="text-xs uppercase tracking-wide text-muted">
@@ -330,7 +377,7 @@ function EventSection({ athleteId, event, report }) {
   return (
     <section
       aria-labelledby={headingId}
-      className="mb-8 rounded-2xl border border-line bg-surface p-6"
+      className="mb-8 rounded-2xl border border-line bg-surface p-4 sm:p-6 print:p-6"
     >
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -355,7 +402,7 @@ function EventSection({ athleteId, event, report }) {
         </Link>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 print:grid-cols-2 print:break-inside-avoid">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 print:grid-cols-2 print:break-inside-avoid">
         <TimesCard event={event} />
         <PredictionCard
           event={event}
@@ -381,7 +428,8 @@ function EventSection({ athleteId, event, report }) {
       </div>
 
       <div className="mt-6 print:break-inside-avoid">
-        <h3 className="mb-1 text-sm font-semibold">Métricas no período</h3>
+        <h3 className="mb-2 text-sm font-semibold">Métricas no período</h3>
+        <MetricsCards event={event} minConclusive={report.min_conclusive_points} />
         <MetricsTable event={event} minConclusive={report.min_conclusive_points} />
       </div>
     </section>
@@ -529,7 +577,7 @@ export default function ReportPage() {
               : 'Visão consolidada por atleta'
           }
         >
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
             {athletes.loaded && athleteInList && (
               <Select
                 id="report-athlete"
@@ -537,7 +585,7 @@ export default function ReportPage() {
                 options={athleteOptions}
                 value={athleteId}
                 onChange={(id) => navigate(`/relatorios/${id}${search}`)}
-                className="w-64"
+                className="w-full sm:w-64"
               />
             )}
             <Segmented
@@ -596,7 +644,7 @@ export default function ReportPage() {
               </p>
               <p className="mt-1 text-muted">Período: {periodLabel}</p>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 print:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 print:grid-cols-4">
               <StatCard icon={Activity} label="Registros" value={data.totals.records} />
               <StatCard icon={Timer} label="Treinos" value={data.totals.trainings} />
               <StatCard icon={Medal} label="Competições" value={data.totals.competitions} />

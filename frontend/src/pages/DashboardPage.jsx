@@ -123,81 +123,149 @@ function PredictionsPanel({ predictions, withoutPrediction, minTrendRecords }) {
           daí.
         </p>
       ) : (
-        <div className="mt-3 overflow-x-auto">
-          <table className="w-full min-w-[52rem] text-left text-sm">
-            <thead className="text-xs uppercase tracking-wide text-muted">
-              <tr>
-                <th scope="col" className="px-5 py-3 font-medium">Atleta</th>
-                <th scope="col" className="px-5 py-3 font-medium">Prova</th>
-                <th scope="col" className="px-5 py-3 font-medium">Último</th>
-                <th scope="col" className="px-5 py-3 font-medium">Próximo treino</th>
-                <th scope="col" className="px-5 py-3 font-medium">Próxima competição</th>
-                <th scope="col" className="px-5 py-3 font-medium">Tendência</th>
-                <th scope="col" className="px-5 py-3">
-                  <span className="sr-only">Ações</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((p) => {
-                const status = p.status ? STATUS[p.status] : null
-                return (
-                  <tr key={`${p.athlete_id}-${eventKey(p)}`} className="border-t border-line">
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-3">
-                        <span
-                          aria-hidden="true"
-                          className="grid size-8 shrink-0 place-items-center rounded-full bg-brand-soft text-xs font-semibold text-brand-text"
-                        >
-                          {initials(p.athlete_name)}
+        <>
+          {/* celular e tablet em pé: cartões; telas largas: tabela (AQ-26) */}
+          <ul className="my-4 grid grid-cols-1 gap-3 px-5 md:grid-cols-2 lg:hidden">
+            {items.map((p) => {
+              const status = p.status ? STATUS[p.status] : null
+              return (
+                <li
+                  key={`${p.athlete_id}-${eventKey(p)}`}
+                  className="rounded-xl border border-line bg-canvas p-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <span
+                      aria-hidden="true"
+                      className="grid size-8 shrink-0 place-items-center rounded-full bg-brand-soft text-xs font-semibold text-brand-text"
+                    >
+                      {initials(p.athlete_name)}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{p.athlete_name}</p>
+                      <p className="text-xs text-muted">
+                        {formatRace(p)} · piscina de {p.pool_length_m} m
+                      </p>
+                    </div>
+                    {status ? (
+                      <Badge tone={status.tone}>{status.label}</Badge>
+                    ) : (
+                      <Badge tone="neutral">
+                        {p.n_records} de {minTrendRecords}
+                      </Badge>
+                    )}
+                  </div>
+                  <dl className="mt-3 grid grid-cols-3 gap-2 text-sm">
+                    <div>
+                      <dt className="text-xs text-muted">Último</dt>
+                      <dd className="font-medium">{formatTime(p.last_time_s)}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted">Próx. treino</dt>
+                      <dd className="font-semibold">
+                        {p.training_s != null ? formatTime(p.training_s) : '—'}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted">Próx. competição</dt>
+                      <dd className="font-semibold">
+                        {p.competition_s != null ? formatTime(p.competition_s) : '—'}
+                      </dd>
+                    </div>
+                  </dl>
+                  <div className="mt-3 flex items-center justify-between gap-2 text-xs text-muted">
+                    <span>
+                      {status ? '' : 'Poucos registros · '}
+                      {signed(p.coef_order)} s por registro
+                    </span>
+                    <Link
+                      to={`/desempenho/${p.athlete_id}?nado=${p.stroke}&prova=${p.distance_m}-${p.pool_length_m}`}
+                      className="inline-flex min-h-10 items-center gap-1 text-sm font-medium text-brand-text hover:underline"
+                    >
+                      Ver gráfico
+                      <ArrowRight size={14} aria-hidden="true" />
+                      <span className="sr-only"> de {p.athlete_name}</span>
+                    </Link>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+          <div className="mt-3 hidden overflow-x-auto lg:block">
+            <table className="w-full min-w-[52rem] text-left text-sm">
+              <thead className="text-xs uppercase tracking-wide text-muted">
+                <tr>
+                  <th scope="col" className="px-5 py-3 font-medium">Atleta</th>
+                  <th scope="col" className="px-5 py-3 font-medium">Prova</th>
+                  <th scope="col" className="px-5 py-3 font-medium">Último</th>
+                  <th scope="col" className="px-5 py-3 font-medium">Próximo treino</th>
+                  <th scope="col" className="px-5 py-3 font-medium">Próxima competição</th>
+                  <th scope="col" className="px-5 py-3 font-medium">Tendência</th>
+                  <th scope="col" className="px-5 py-3">
+                    <span className="sr-only">Ações</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((p) => {
+                  const status = p.status ? STATUS[p.status] : null
+                  return (
+                    <tr key={`${p.athlete_id}-${eventKey(p)}`} className="border-t border-line">
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-3">
+                          <span
+                            aria-hidden="true"
+                            className="grid size-8 shrink-0 place-items-center rounded-full bg-brand-soft text-xs font-semibold text-brand-text"
+                          >
+                            {initials(p.athlete_name)}
+                          </span>
+                          <span className="font-medium">{p.athlete_name}</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3">
+                        {formatRace(p)}
+                        <span className="text-muted"> · {p.pool_length_m} m</span>
+                      </td>
+                      <td className="px-5 py-3">
+                        {formatTime(p.last_time_s)}
+                        <span className="block text-xs text-muted">
+                          {formatDate(p.last_session_date)}
                         </span>
-                        <span className="font-medium">{p.athlete_name}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3">
-                      {formatRace(p)}
-                      <span className="text-muted"> · {p.pool_length_m} m</span>
-                    </td>
-                    <td className="px-5 py-3">
-                      {formatTime(p.last_time_s)}
-                      <span className="block text-xs text-muted">
-                        {formatDate(p.last_session_date)}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 font-semibold">
-                      {p.training_s != null ? formatTime(p.training_s) : '—'}
-                    </td>
-                    <td className="px-5 py-3 font-semibold">
-                      {p.competition_s != null ? formatTime(p.competition_s) : '—'}
-                    </td>
-                    <td className="px-5 py-3">
-                      {status ? (
-                        <Badge tone={status.tone}>{status.label}</Badge>
-                      ) : (
-                        <Badge tone="neutral">
-                          Poucos registros ({p.n_records} de {minTrendRecords})
-                        </Badge>
-                      )}
-                      <span className="mt-1 block text-xs text-muted">
-                        {signed(p.coef_order)} s por registro
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 text-right">
-                      <Link
-                        to={`/desempenho/${p.athlete_id}?nado=${p.stroke}&prova=${p.distance_m}-${p.pool_length_m}`}
-                        className="inline-flex items-center gap-1 font-medium text-brand-text hover:underline"
-                      >
-                        Ver gráfico
-                        <ArrowRight size={14} aria-hidden="true" />
-                        <span className="sr-only"> de {p.athlete_name}</span>
-                      </Link>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+                      </td>
+                      <td className="px-5 py-3 font-semibold">
+                        {p.training_s != null ? formatTime(p.training_s) : '—'}
+                      </td>
+                      <td className="px-5 py-3 font-semibold">
+                        {p.competition_s != null ? formatTime(p.competition_s) : '—'}
+                      </td>
+                      <td className="px-5 py-3">
+                        {status ? (
+                          <Badge tone={status.tone}>{status.label}</Badge>
+                        ) : (
+                          <Badge tone="neutral">
+                            Poucos registros ({p.n_records} de {minTrendRecords})
+                          </Badge>
+                        )}
+                        <span className="mt-1 block text-xs text-muted">
+                          {signed(p.coef_order)} s por registro
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        <Link
+                          to={`/desempenho/${p.athlete_id}?nado=${p.stroke}&prova=${p.distance_m}-${p.pool_length_m}`}
+                          className="inline-flex items-center gap-1 font-medium text-brand-text hover:underline"
+                        >
+                          Ver gráfico
+                          <ArrowRight size={14} aria-hidden="true" />
+                          <span className="sr-only"> de {p.athlete_name}</span>
+                        </Link>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
       {filtered.length > VISIBLE_ROWS && (
         <div className="border-t border-line px-5 py-3 text-xs text-muted">
@@ -272,7 +340,7 @@ export default function DashboardPage() {
         title={`Olá, ${firstName}`}
         description="Resumo dos seus atletas e das previsões de tempo."
       >
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link to="/atletas/novo" className={buttonClasses('secondary')}>
             Novo atleta
           </Link>
@@ -289,7 +357,7 @@ export default function DashboardPage() {
         <Alert>{error}</Alert>
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
               icon={Users}
               label="Atletas ativos"

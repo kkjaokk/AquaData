@@ -161,7 +161,7 @@ export default function AthletesPage() {
           )}
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {sorted.map((athlete) => (
             <AthleteCard
               key={athlete.id}
